@@ -665,7 +665,7 @@ export default function DatabasePage() {
             <CardContent>
               <div className="space-y-6">
                 <div className="border border-border rounded-lg p-4 bg-card">
-                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div className="flex flex-col sm:flex-row items-end gap-4">
                     <div className="flex-1 w-full">
                       <label htmlFor="search-value" className="text-sm font-medium mb-2 block">
                         Search Value
@@ -675,11 +675,11 @@ export default function DatabasePage() {
                         type="number"
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
-                        className="w-full p-2 border border-input rounded bg-background"
+                        className="w-full p-2 border border-input rounded bg-background h-[35px]"
                         placeholder="Enter a key..."
                       />
                     </div>
-                    <Button onClick={handleSearch} className="w-full sm:w-auto mt-2 sm:mt-0 self-end">
+                    <Button onClick={handleSearch} className="w-full sm:w-auto mt-2 sm:mt-0 self-end h-[35px]">
                       <Search className="h-4 w-4 mr-2" />
                       Search
                     </Button>
@@ -747,40 +747,7 @@ export default function DatabasePage() {
                   </div>
                 </div>
 
-                <div>
-                  <h4 className="font-medium mb-3">Performance Metrics</h4>
-                  <div className="space-y-3">
-                    <div className="border border-border rounded-lg p-3">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm">Point Lookup</span>
-                        <Badge variant="outline">2.3ms</Badge>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div className="bg-chart-2 h-2 rounded-full" style={{ width: "23%" }}></div>
-                      </div>
-                    </div>
-
-                    <div className="border border-border rounded-lg p-3">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm">Range Query (10 keys)</span>
-                        <Badge variant="outline">5.1ms</Badge>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div className="bg-chart-3 h-2 rounded-full" style={{ width: "51%" }}></div>
-                      </div>
-                    </div>
-
-                    <div className="border border-border rounded-lg p-3">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm">Range Query (100 keys)</span>
-                        <Badge variant="outline">12.4ms</Badge>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div className="bg-chart-4 h-2 rounded-full" style={{ width: "100%" }}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+    
               </div>
             </CardContent>
           </Card>
