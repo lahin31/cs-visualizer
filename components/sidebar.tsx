@@ -14,7 +14,8 @@ import {
   Home,
   ChevronRight,
   Settings,
-  BarChart3
+  BarChart3,
+  Network
 } from "lucide-react"
 
 const navigationItems = [
@@ -35,6 +36,18 @@ const navigationItems = [
     href: "/database",
     icon: Database,
     description: "SQL database architecture"
+  },
+  {
+    title: "TCP Protocol",
+    href: "/tcp",
+    icon: Network,
+    description: "TCP protocol visualization"
+  },
+  {
+    title: "UDP Protocol",
+    href: "/udp",
+    icon: Network,
+    description: "UDP protocol visualization"
   },
 ]
 
