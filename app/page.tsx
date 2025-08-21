@@ -445,7 +445,6 @@ export default function ASTVisualizer() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <span>Code Input</span>
                   <div className="flex gap-1">
                     {(["javascript", "jsx", "python", "c"] as Language[]).map((lang) => (
                       <Button
@@ -461,7 +460,12 @@ export default function ASTVisualizer() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={parseCode} disabled={isLoading} size="sm" className="flex items-center gap-2">
+                  <Button
+                    onClick={parseCode}
+                    disabled={isLoading}
+                    size="sm"
+                    className="flex items-center gap-2 ml-4"
+                  >
                     <Play size={16} />
                     {isLoading ? "Parsing..." : "Parse"}
                   </Button>
