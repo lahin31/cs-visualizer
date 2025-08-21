@@ -368,7 +368,7 @@ export default function ASTVisualizer() {
         <div className="mb-8">
                       <div className="flex items-center gap-3 mb-4">
               <Code className="text-purple-600" size={32} />
-              <h1 className="text-3xl font-bold">Multi-Language CS Visualizer</h1>
+              <h1 className="text-3xl font-bold">Multi-Language AST Visualizer</h1>
             </div>
             <p className="text-gray-600">
               Explore computer science concepts through interactive visualizations
