@@ -71,6 +71,17 @@ interface TreeNodeProps {
 }
 
 const TreeNode = ({ node, depth = 0, isExpanded = false, onToggle, onNodeSelect }: TreeNodeProps) => {
+  if (!node || typeof node.type !== 'string') {
+    // If the node is not a valid AST node, render it as a string.
+    return (
+      <div className="py-1" style={{ marginLeft: `${depth * 12}px` }}>
+        <span className="text-purple-600 font-sans text-sm bg-purple-50 px-2 py-1 rounded">
+          {JSON.stringify(node)}
+        </span>
+      </div>
+    );
+  }
+
   const [expanded, setExpanded] = useState(isExpanded)
 
   const hasChildren =
@@ -133,6 +144,17 @@ const TreeNode = ({ node, depth = 0, isExpanded = false, onToggle, onNodeSelect 
             <span className="text-gray-500 text-xs font-medium min-w-[60px]">{key}:</span>
           </div>
           <TreeNode node={value} depth={depth + 1} onNodeSelect={onNodeSelect} />
+        </div>
+      )
+    }
+    // Fallback for other object types that are not valid AST nodes
+    if (typeof value === "object" && value !== null) {
+      return (
+        <div className="flex items-center gap-2 py-1">
+          <span className="text-gray-500 text-xs font-medium min-w-[60px]">{key}:</span>
+          <span className="text-purple-600 font-sans text-sm bg-purple-50 px-2 py-1 rounded">
+            {JSON.stringify(value)}
+          </span>
         </div>
       )
     }
