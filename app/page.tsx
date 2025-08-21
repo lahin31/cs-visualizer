@@ -1,10 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { parse } from "@babel/parser"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
+import CodeMirror from "@uiw/react-codemirror"
+import { javascript } from "@codemirror/lang-javascript"
+import { python } from "@codemirror/lang-python"
+import { cpp } from "@codemirror/lang-cpp"
+import { EditorView, Decoration } from "@codemirror/view"
+import { StateEffect, StateField } from "@codemirror/state"
 import { Badge } from "@/components/ui/badge"
 import { ChevronDown, ChevronRight, Code, Play, RotateCcw, BookOpen } from "lucide-react"
 import Link from "next/link"
@@ -62,9 +67,10 @@ interface TreeNodeProps {
   depth?: number
   isExpanded?: boolean
   onToggle?: () => void
+  onNodeSelect?: (node: ASTNode) => void
 }
 
-const TreeNode = ({ node, depth = 0, isExpanded = false, onToggle }: TreeNodeProps) => {
+const TreeNode = ({ node, depth = 0, isExpanded = false, onToggle, onNodeSelect }: TreeNodeProps) => {
   const [expanded, setExpanded] = useState(isExpanded)
 
   const hasChildren =
@@ -79,9 +85,14 @@ const TreeNode = ({ node, depth = 0, isExpanded = false, onToggle }: TreeNodePro
         (Array.isArray(node[key]) || (typeof node[key] === "object" && node[key] !== null)),
     )
 
-  const handleToggle = () => {
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation()
     setExpanded(!expanded)
     onToggle?.()
+  }
+
+  const handleSelect = () => {
+    onNodeSelect?.(node)
   }
 
   const renderValue = (value: any, key: string) => {
@@ -108,7 +119,7 @@ const TreeNode = ({ node, depth = 0, isExpanded = false, onToggle }: TreeNodePro
           {expanded && (
             <div className="ml-6 mt-2 space-y-1">
               {value.map((item, index) => (
-                <TreeNode key={index} node={item} depth={depth + 1} />
+                <TreeNode key={index} node={item} depth={depth + 1} onNodeSelect={onNodeSelect} />
               ))}
             </div>
           )}
@@ -121,7 +132,7 @@ const TreeNode = ({ node, depth = 0, isExpanded = false, onToggle }: TreeNodePro
           <div className="flex items-center gap-2 py-1">
             <span className="text-gray-500 text-xs font-medium min-w-[60px]">{key}:</span>
           </div>
-          <TreeNode node={value} depth={depth + 1} />
+          <TreeNode node={value} depth={depth + 1} onNodeSelect={onNodeSelect} />
         </div>
       )
     }
@@ -130,10 +141,13 @@ const TreeNode = ({ node, depth = 0, isExpanded = false, onToggle }: TreeNodePro
 
   return (
     <div className="py-1" style={{ marginLeft: `${depth * 12}px` }}>
-      <div className="flex items-center gap-3 group hover:bg-gray-50 rounded-lg px-3 py-2 transition-colors">
+      <div
+        onClick={handleSelect}
+        className="flex items-center gap-3 group hover:bg-gray-50 rounded-lg px-3 py-2 transition-colors cursor-pointer"
+      >
         {hasChildren && (
-          <button 
-            onClick={handleToggle} 
+          <button
+            onClick={handleToggle}
             className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded hover:bg-gray-200"
           >
             {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -295,12 +309,60 @@ const parsePythonAST = (code: string): ASTNode => {
   return ast
 }
 
+const highlightEffect = StateEffect.define<{ start: number; end: number } | null>()
+
+const highlightField = StateField.define({
+  create() {
+    return Decoration.none
+  },
+  update(decorations, tr) {
+    decorations = decorations.map(tr.changes)
+    for (const e of tr.effects) {
+      if (e.is(highlightEffect)) {
+        if (e.value) {
+          const { start, end } = e.value
+          const highlightMark = Decoration.mark({ class: "cm-highlight" })
+          return Decoration.set([highlightMark.range(start, end)])
+        } else {
+          return Decoration.none
+        }
+      }
+    }
+    return decorations
+  },
+  provide: (f) => EditorView.decorations.from(f),
+})
+
+const highlightTheme = EditorView.baseTheme({
+  ".cm-highlight": { backgroundColor: "rgba(160, 120, 220, 0.3)" },
+})
+
 export default function ASTVisualizer() {
   const [language, setLanguage] = useState<Language>("jsx")
   const [code, setCode] = useState(LANGUAGE_EXAMPLES.jsx)
   const [ast, setAst] = useState<ASTNode | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [selection, setSelection] = useState<{ start: number; end: number } | null>(null)
+  const [view, setView] = useState<EditorView>()
+
+  const handleNodeSelect = useCallback((node: ASTNode) => {
+    if (node && typeof node.start === "number" && typeof node.end === "number") {
+      setSelection({ start: node.start, end: node.end })
+    }
+  }, [])
+
+  const onUpdate = useCallback((viewUpdate: any) => {
+    setView(viewUpdate.view)
+  }, [])
+
+  useEffect(() => {
+    if (view) {
+      view.dispatch({
+        effects: highlightEffect.of(selection),
+      })
+    }
+  }, [selection, view])
 
   const parseCode = async () => {
     if (!code.trim()) {
@@ -353,6 +415,7 @@ export default function ASTVisualizer() {
     setCode(LANGUAGE_EXAMPLES[language])
     setAst(null)
     setError(null)
+    setSelection(null)
   }
 
   const handleLanguageChange = (newLanguage: Language) => {
@@ -360,19 +423,20 @@ export default function ASTVisualizer() {
     setCode(LANGUAGE_EXAMPLES[newLanguage])
     setAst(null)
     setError(null)
+    setSelection(null)
   }
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <div className="container mx-auto p-6">
         <div className="mb-8">
-                      <div className="flex items-center gap-3 mb-4">
-              <Code className="text-purple-600" size={32} />
-              <h1 className="text-3xl font-bold">Multi-Language AST Visualizer</h1>
-            </div>
-            <p className="text-gray-600">
-              Explore computer science concepts through interactive visualizations
-            </p>
+          <div className="flex items-center gap-3 mb-4">
+            <Code className="text-purple-600" size={32} />
+            <h1 className="text-3xl font-bold">Multi-Language AST Visualizer</h1>
+          </div>
+          <p className="text-gray-600">
+            Explore computer science concepts through interactive visualizations
+          </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6 items-start">
@@ -414,12 +478,23 @@ export default function ASTVisualizer() {
               </CardTitle>
             </CardHeader>
             <CardContent className="h-full">
-              <Textarea
+              <CodeMirror
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder={`Enter your ${language.toUpperCase()} code here...`}
-                className="h-[400px] font-sans text-sm resize-none bg-white text-gray-900 border-gray-300"
-                spellCheck={false}
+                height="400px"
+                extensions={[
+                  language === "javascript" || language === "jsx"
+                    ? javascript({ jsx: true })
+                    : language === "python"
+                    ? python()
+                    : language === "c"
+                    ? cpp()
+                    : javascript({ jsx: true }),
+                  highlightField,
+                  highlightTheme,
+                ]}
+                onChange={(value) => setCode(value)}
+                onUpdate={onUpdate}
+                className="h-[400px] font-sans text-sm resize-none bg-white text-gray-900 border border-gray-300 rounded-md"
               />
               {error && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">{error}</div>
@@ -436,7 +511,7 @@ export default function ASTVisualizer() {
               <div className="h-[400px] overflow-auto bg-gray-50 rounded-lg p-4">
                 {ast ? (
                   <div className="font-sans text-sm">
-                    <TreeNode node={ast} isExpanded={true} />
+                    <TreeNode node={ast} isExpanded={true} onNodeSelect={handleNodeSelect} />
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-full text-gray-500">
