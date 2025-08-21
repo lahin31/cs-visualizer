@@ -638,36 +638,11 @@ export default function DatabasePage() {
                 <div>
                   <div className="flex items-center gap-4 mb-4">
                     <h3 className="text-lg font-semibold">Search Process</h3>
-                    <Button
-                      onClick={() => setQueryStep((prev) => (prev + 1) % querySteps.length)}
-                      size="sm"
-                      className="bg-chart-1 hover:bg-chart-1/90"
-                    >
-                      Next Step
-                    </Button>
                   </div>
 
-                  <div className="border border-border rounded-lg p-4 bg-card mb-6">
-                    <div className="text-sm font-mono bg-muted p-3 rounded mb-4">
+                  <div className="border border-border rounded-lg p-4 bg-card">
+                    <div className="text-sm font-mono bg-muted p-3 rounded">
                       SELECT * FROM users WHERE id = 75;
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-6 gap-2">
-                      {querySteps.map((step, index) => (
-                        <div
-                          key={index}
-                          className={`p-3 rounded-lg text-center text-sm transition-all duration-500 ${
-                            index <= queryStep
-                              ? "bg-chart-1 text-white"
-                              : index === queryStep + 1
-                                ? "bg-chart-1/20 border border-chart-1"
-                                : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          <div className="font-medium">{index + 1}</div>
-                          <div className="text-xs mt-1">{step}</div>
-                        </div>
-                      ))}
                     </div>
                   </div>
                 </div>
