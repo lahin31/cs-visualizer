@@ -32,7 +32,7 @@ const navigationItems = [
     description: "Python compilation process"
   },
    {
-    title: "Database Storage",
+    title: "Database Architecture",
     href: "/database",
     icon: Database,
     description: "SQL database architecture"
