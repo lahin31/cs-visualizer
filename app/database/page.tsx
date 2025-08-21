@@ -11,6 +11,174 @@ export default function DatabasePage() {
   const [activeStep, setActiveStep] = useState(0)
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
   const [queryStep, setQueryStep] = useState(0)
+  const [searchValue, setSearchValue] = useState("75")
+  const [searchPath, setSearchPath] = useState<string[]>([])
+  const [range, setRange] = useState<[number, number] | null>([30, 80])
+
+  const handleSearch = () => {
+    const value = parseInt(searchValue)
+    setSearchPath([])
+
+    if (isNaN(value)) {
+      return
+    }
+
+    const path: string[] = ["root"]
+    if (value < 50) {
+      path.push("left")
+      if (value < 25) path.push("leaf-0-0")
+      else if (value < 35) path.push("leaf-0-1")
+      else path.push("leaf-0-2")
+    } else if (value < 100) {
+      path.push("middle")
+      if (value < 75) path.push("leaf-1-0")
+      else if (value < 85) path.push("leaf-1-1")
+      else path.push("leaf-1-2")
+    } else {
+      path.push("right")
+      if (value < 125) path.push("leaf-2-0")
+      else if (value < 150) path.push("leaf-2-1")
+      else path.push("leaf-2-2")
+    }
+
+    path.forEach((node, index) => {
+      setTimeout(() => {
+        setSearchPath((prev) => [...prev, node])
+      }, index * 500)
+    })
+  }
+
+  const BPlusTreeVisualization = ({ isSearch }: { isSearch?: boolean }) => {
+    const leafNodesData = [
+      [
+        [10, 20],
+        [30, 40],
+        [45, 48],
+      ],
+      [
+        [55, 60],
+        [70, 80],
+        [90, 95],
+      ],
+      [
+        [110, 120],
+        [130, 140],
+        [160, 170],
+      ],
+    ]
+
+    return (
+      <div className="border border-border rounded-lg p-6 bg-card">
+        {/* Root Node */}
+        <div className="flex justify-center mb-8">
+          <div
+            className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-300 ${
+              selectedNode === "root" ? "border-primary bg-primary/10" : "border-border bg-background"
+            } ${searchPath.includes("root") ? "!border-chart-1 ring-2 ring-chart-1" : ""}`}
+            onClick={() => !isSearch && setSelectedNode(selectedNode === "root" ? null : "root")}
+          >
+            <div className="text-center">
+              <div className="text-sm font-medium text-primary">Root Node</div>
+              <div className="flex gap-2 mt-2">
+                <span className="px-2 py-1 bg-primary/20 rounded text-xs font-mono">50</span>
+                <span className="px-2 py-1 bg-primary/20 rounded text-xs font-mono">100</span>
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">Internal Node</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Level 1 Nodes */}
+        <div className="flex justify-center gap-8 mb-8">
+          {["left", "middle", "right"].map((position, index) => (
+            <div key={position} className="flex flex-col items-center">
+              <div
+                className={`border-2 rounded-lg p-3 cursor-pointer transition-all duration-300 ${
+                  selectedNode === position ? "border-secondary bg-secondary/10" : "border-border bg-background"
+                } ${searchPath.includes(position) ? "!border-chart-1 ring-2 ring-chart-1" : ""}`}
+                onClick={() => !isSearch && setSelectedNode(selectedNode === position ? null : position)}
+              >
+                <div className="text-center">
+                  <div className="text-xs font-medium text-secondary">Internal Node</div>
+                  <div className="flex gap-1 mt-1">
+                    {index === 0 && (
+                      <>
+                        <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">25</span>
+                        <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">35</span>
+                      </>
+                    )}
+                    {index === 1 && (
+                      <>
+                        <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">75</span>
+                        <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">85</span>
+                      </>
+                    )}
+                    {index === 2 && (
+                      <>
+                        <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">125</span>
+                        <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">150</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Leaf Nodes */}
+              <div className="flex gap-2 mt-4">
+                {leafNodesData[index].map((leaf, leafIndex) => {
+                  const leafId = `leaf-${index}-${leafIndex}`
+                  const isInRange = range && leaf.some((val) => val >= range[0] && val <= range[1])
+
+                  return (
+                    <div
+                      key={leafIndex}
+                      className={`border rounded p-2 bg-muted/50 transition-all duration-300 ${
+                        searchPath.includes(leafId) ? "!border-chart-1 ring-2 ring-chart-1" : "border-border"
+                      } ${isInRange ? "bg-chart-1/20" : ""}`}
+                    >
+                      <div className="text-xs text-center text-accent font-medium">Leaf Node</div>
+                      <div className="flex flex-col gap-1 mt-1">
+                        {leaf.map((val) => {
+                          const isValInRange = range && val >= range[0] && val <= range[1]
+                          return (
+                            <span
+                              key={val}
+                              className={`px-1 py-0.5 rounded text-xs font-mono transition-all duration-300 ${
+                                isValInRange ? "bg-chart-1 text-white" : "bg-accent/20"
+                              }`}
+                            >
+                              {val}
+                            </span>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Node Information */}
+        {!isSearch && selectedNode && (
+          <div className="mt-6 p-4 bg-popover rounded-lg border border-border">
+            <h4 className="font-medium mb-2">Node Information</h4>
+            <div className="text-sm text-popover-foreground">
+              {selectedNode === "root" &&
+                "Root node contains keys that divide the tree into subtrees. Each key represents the maximum value in its left subtree."}
+              {selectedNode === "left" &&
+                "Internal node managing keys 1-49. Contains pointers to leaf nodes with actual data."}
+              {selectedNode === "middle" &&
+                "Internal node managing keys 50-99. Balances the tree structure for optimal search performance."}
+              {selectedNode === "right" &&
+                "Internal node managing keys 100+. Maintains sorted order for efficient range queries."}
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   const steps = [
     { id: 0, title: "B+ Tree Basics", icon: TreePine, color: "bg-primary" },
@@ -165,146 +333,7 @@ export default function DatabasePage() {
                 {/* Interactive B+ Tree Visualization */}
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Interactive B+ Tree</h3>
-                  <div className="border border-border rounded-lg p-6 bg-card">
-                    {/* Root Node */}
-                    <div className="flex justify-center mb-8">
-                      <div
-                        className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-300 ${
-                          selectedNode === "root" ? "border-primary bg-primary/10" : "border-border bg-background"
-                        }`}
-                        onClick={() => setSelectedNode(selectedNode === "root" ? null : "root")}
-                      >
-                        <div className="text-center">
-                          <div className="text-sm font-medium text-primary">Root Node</div>
-                          <div className="flex gap-2 mt-2">
-                            <span className="px-2 py-1 bg-primary/20 rounded text-xs font-mono">50</span>
-                            <span className="px-2 py-1 bg-primary/20 rounded text-xs font-mono">100</span>
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-1">Internal Node</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Level 1 Nodes */}
-                    <div className="flex justify-center gap-8 mb-8">
-                      {["left", "middle", "right"].map((position, index) => (
-                        <div key={position} className="flex flex-col items-center">
-                          <div
-                            className={`border-2 rounded-lg p-3 cursor-pointer transition-all duration-300 ${
-                              selectedNode === position ? "border-secondary bg-secondary/10" : "border-border bg-background"
-                            }`}
-                            onClick={() => setSelectedNode(selectedNode === position ? null : position)}
-                          >
-                            <div className="text-center">
-                              <div className="text-xs font-medium text-secondary">Internal Node</div>
-                              <div className="flex gap-1 mt-1">
-                                {index === 0 && (
-                                  <>
-                                    <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">25</span>
-                                    <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">35</span>
-                                  </>
-                                )}
-                                {index === 1 && (
-                                  <>
-                                    <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">75</span>
-                                    <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">85</span>
-                                  </>
-                                )}
-                                {index === 2 && (
-                                  <>
-                                    <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">125</span>
-                                    <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">150</span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Leaf Nodes */}
-                          <div className="flex gap-2 mt-4">
-                            {Array.from({ length: 3 }, (_, leafIndex) => (
-                              <div key={leafIndex} className="border border-border rounded p-2 bg-muted/50">
-                                <div className="text-xs text-center text-accent font-medium">Leaf Node</div>
-                                <div className="flex flex-col gap-1 mt-1">
-                                  {index === 0 && leafIndex === 0 && (
-                                    <>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">10</span>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">20</span>
-                                    </>
-                                  )}
-                                  {index === 0 && leafIndex === 1 && (
-                                    <>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">30</span>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">40</span>
-                                    </>
-                                  )}
-                                  {index === 0 && leafIndex === 2 && (
-                                    <>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">45</span>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">48</span>
-                                    </>
-                                  )}
-                                  {index === 1 && leafIndex === 0 && (
-                                    <>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">55</span>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">60</span>
-                                    </>
-                                  )}
-                                  {index === 1 && leafIndex === 1 && (
-                                    <>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">70</span>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">80</span>
-                                    </>
-                                  )}
-                                  {index === 1 && leafIndex === 2 && (
-                                    <>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">90</span>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">95</span>
-                                    </>
-                                  )}
-                                  {index === 2 && leafIndex === 0 && (
-                                    <>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">110</span>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">120</span>
-                                    </>
-                                  )}
-                                  {index === 2 && leafIndex === 1 && (
-                                    <>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">130</span>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">140</span>
-                                    </>
-                                  )}
-                                  {index === 2 && leafIndex === 2 && (
-                                    <>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">160</span>
-                                      <span className="px-1 py-0.5 bg-accent/20 rounded text-xs font-mono">170</span>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Node Information */}
-                    {selectedNode && (
-                      <div className="mt-6 p-4 bg-popover rounded-lg border border-border">
-                        <h4 className="font-medium mb-2">Node Information</h4>
-                        <div className="text-sm text-popover-foreground">
-                          {selectedNode === "root" &&
-                            "Root node contains keys that divide the tree into subtrees. Each key represents the maximum value in its left subtree."}
-                          {selectedNode === "left" &&
-                            "Internal node managing keys 1-49. Contains pointers to leaf nodes with actual data."}
-                          {selectedNode === "middle" &&
-                            "Internal node managing keys 50-99. Balances the tree structure for optimal search performance."}
-                          {selectedNode === "right" &&
-                            "Internal node managing keys 100+. Maintains sorted order for efficient range queries."}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <BPlusTreeVisualization />
                 </div>
 
                 {/* B+ Tree Properties */}
@@ -635,6 +664,30 @@ export default function DatabasePage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
+                <div className="border border-border rounded-lg p-4 bg-card">
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <div className="flex-1 w-full">
+                      <label htmlFor="search-value" className="text-sm font-medium mb-2 block">
+                        Search Value
+                      </label>
+                      <input
+                        id="search-value"
+                        type="number"
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                        className="w-full p-2 border border-input rounded bg-background"
+                        placeholder="Enter a key..."
+                      />
+                    </div>
+                    <Button onClick={handleSearch} className="w-full sm:w-auto mt-2 sm:mt-0 self-end">
+                      <Search className="h-4 w-4 mr-2" />
+                      Search
+                    </Button>
+                  </div>
+                </div>
+
+                <BPlusTreeVisualization isSearch={true} />
+
                 <div>
                   <div className="flex items-center gap-4 mb-4">
                     <h3 className="text-lg font-semibold">Search Process</h3>
@@ -642,7 +695,7 @@ export default function DatabasePage() {
 
                   <div className="border border-border rounded-lg p-4 bg-card">
                     <div className="text-sm font-mono bg-muted p-3 rounded">
-                      SELECT * FROM users WHERE id = 75;
+                      SELECT * FROM users WHERE id = {searchValue || "?"};
                     </div>
                   </div>
                 </div>
