@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Network, Search, FileText, Play, BarChart3, Send, CheckCircle2 } from "lucide-react"
-import Link from "next/link"
+import { Play, Send, CheckCircle2 } from "lucide-react"
 
-const DataTransferVisualization = () => {
+const DataTransferVisualizationView = () => {
   const [packets, setPackets] = useState([
     { id: 1, seq: 1, status: "idle", ackStatus: "idle" },
     { id: 2, seq: 101, status: "idle", ackStatus: "idle" },
@@ -271,7 +270,6 @@ const ConnectionTerminationVisualization = () => {
           FIN
         </motion.div>
 
-        {/* ACK from Server */}
         <motion.div
           className="absolute w-24 p-1 rounded-md bg-gray-500/80 text-white text-center text-xs shadow-lg"
           style={{ top: '35%' }}
@@ -282,7 +280,6 @@ const ConnectionTerminationVisualization = () => {
           ACK
         </motion.div>
 
-        {/* FIN from Server */}
         <motion.div
           className="absolute w-24 p-1 rounded-md bg-red-500/80 text-white text-center text-xs shadow-lg"
           style={{ top: '55%' }}
@@ -391,7 +388,7 @@ export default function TcpPage() {
               <CardDescription>Visualization of data packets being sent and acknowledged.</CardDescription>
             </CardHeader>
             <CardContent>
-              <DataTransferVisualization />
+              <DataTransferVisualizationView />
               <div className="mt-6 prose prose-sm max-w-none">
                 <p>
                   Once the connection is established, data can be transferred reliably. TCP breaks down data into smaller segments, sending them sequentially. The receiver acknowledges the receipt of each segment, ensuring that no data is lost.

@@ -6,6 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Database, Search, FileText, TreePine, Play, BarChart3, TrendingUp, Activity, Zap, Cpu, HardDrive } from "lucide-react"
 import Link from "next/link"
+import { BPlusTreeVisualization } from "@/components/database/b-plus-tree-visualization"
+import { WalVisualization } from "@/components/database/wal-visualization"
+import { QueryVisualization } from "@/components/database/query-visualization"
 
 export default function DatabasePage() {
   const [activeStep, setActiveStep] = useState(0)
@@ -46,138 +49,6 @@ export default function DatabasePage() {
         setSearchPath((prev) => [...prev, node])
       }, index * 500)
     })
-  }
-
-  const BPlusTreeVisualization = ({ isSearch }: { isSearch?: boolean }) => {
-    const leafNodesData = [
-      [
-        [10, 20],
-        [30, 40],
-        [45, 48],
-      ],
-      [
-        [55, 60],
-        [70, 80],
-        [90, 95],
-      ],
-      [
-        [110, 120],
-        [130, 140],
-        [160, 170],
-      ],
-    ]
-
-    return (
-      <div className="border border-border rounded-lg p-6 bg-card">
-        {/* Root Node */}
-        <div className="flex justify-center mb-8">
-          <div
-            className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-300 ${
-              selectedNode === "root" ? "border-primary bg-primary/10" : "border-border bg-background"
-            } ${searchPath.includes("root") ? "!border-chart-1 ring-2 ring-chart-1" : ""}`}
-            onClick={() => !isSearch && setSelectedNode(selectedNode === "root" ? null : "root")}
-          >
-            <div className="text-center">
-              <div className="text-sm font-medium text-primary">Root Node</div>
-              <div className="flex gap-2 mt-2">
-                <span className="px-2 py-1 bg-primary/20 rounded text-xs font-mono">50</span>
-                <span className="px-2 py-1 bg-primary/20 rounded text-xs font-mono">100</span>
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">Internal Node</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Level 1 Nodes */}
-        <div className="flex justify-center gap-8 mb-8">
-          {["left", "middle", "right"].map((position, index) => (
-            <div key={position} className="flex flex-col items-center">
-              <div
-                className={`border-2 rounded-lg p-3 cursor-pointer transition-all duration-300 ${
-                  selectedNode === position ? "border-secondary bg-secondary/10" : "border-border bg-background"
-                } ${searchPath.includes(position) ? "!border-chart-1 ring-2 ring-chart-1" : ""}`}
-                onClick={() => !isSearch && setSelectedNode(selectedNode === position ? null : position)}
-              >
-                <div className="text-center">
-                  <div className="text-xs font-medium text-secondary">Internal Node</div>
-                  <div className="flex gap-1 mt-1">
-                    {index === 0 && (
-                      <>
-                        <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">25</span>
-                        <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">35</span>
-                      </>
-                    )}
-                    {index === 1 && (
-                      <>
-                        <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">75</span>
-                        <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">85</span>
-                      </>
-                    )}
-                    {index === 2 && (
-                      <>
-                        <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">125</span>
-                        <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">150</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Leaf Nodes */}
-              <div className="flex gap-2 mt-4">
-                {leafNodesData[index].map((leaf, leafIndex) => {
-                  const leafId = `leaf-${index}-${leafIndex}`
-                  const isInRange = range && leaf.some((val) => val >= range[0] && val <= range[1])
-
-                  return (
-                    <div
-                      key={leafIndex}
-                      className={`border rounded p-2 bg-muted/50 transition-all duration-300 ${
-                        searchPath.includes(leafId) ? "!border-chart-1 ring-2 ring-chart-1" : "border-border"
-                      } ${isInRange ? "bg-chart-1/20" : ""}`}
-                    >
-                      <div className="text-xs text-center text-accent font-medium">Leaf Node</div>
-                      <div className="flex flex-col gap-1 mt-1">
-                        {leaf.map((val) => {
-                          const isValInRange = range && val >= range[0] && val <= range[1]
-                          return (
-                            <span
-                              key={val}
-                              className={`px-1 py-0.5 rounded text-xs font-mono transition-all duration-300 ${
-                                isValInRange ? "bg-chart-1 text-white" : "bg-accent/20"
-                              }`}
-                            >
-                              {val}
-                            </span>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Node Information */}
-        {!isSearch && selectedNode && (
-          <div className="mt-6 p-4 bg-popover rounded-lg border border-border">
-            <h4 className="font-medium mb-2">Node Information</h4>
-            <div className="text-sm text-popover-foreground">
-              {selectedNode === "root" &&
-                "Root node contains keys that divide the tree into subtrees. Each key represents the maximum value in its left subtree."}
-              {selectedNode === "left" &&
-                "Internal node managing keys 1-49. Contains pointers to leaf nodes with actual data."}
-              {selectedNode === "middle" &&
-                "Internal node managing keys 50-99. Balances the tree structure for optimal search performance."}
-              {selectedNode === "right" &&
-                "Internal node managing keys 100+. Maintains sorted order for efficient range queries."}
-            </div>
-          </div>
-        )}
-      </div>
-    )
   }
 
   const steps = [
@@ -233,9 +104,6 @@ export default function DatabasePage() {
                     <step.icon className="h-8 w-8" />
                   </div>
                   <span className="text-sm font-medium text-card-foreground">{step.title}</span>
-                  {/* {index < steps.length - 1 && (
-                    <div className="absolute w-24 h-0.5 bg-border mt-8 ml-20 hidden md:block" />
-                  )} */}
                 </div>
               ))}
             </div>
@@ -663,92 +531,11 @@ export default function DatabasePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                <div className="border border-border rounded-lg p-4 bg-card">
-                  <div className="flex flex-col sm:flex-row items-end gap-4">
-                    <div className="flex-1 w-full">
-                      <label htmlFor="search-value" className="text-sm font-medium mb-2 block">
-                        Search Value
-                      </label>
-                      <input
-                        id="search-value"
-                        type="number"
-                        value={searchValue}
-                        onChange={(e) => setSearchValue(e.target.value)}
-                        className="w-full p-2 border border-input rounded bg-background h-[35px]"
-                        placeholder="Enter a key..."
-                      />
-                    </div>
-                    <Button onClick={handleSearch} className="w-full sm:w-auto mt-2 sm:mt-0 self-end h-[35px]">
-                      <Search className="h-4 w-4 mr-2" />
-                      Search
-                    </Button>
-                  </div>
-                </div>
-
-                <BPlusTreeVisualization isSearch={true} />
-
-                <div>
-                  <div className="flex items-center gap-4 mb-4">
-                    <h3 className="text-lg font-semibold">Search Process</h3>
-                  </div>
-
-                  <div className="border border-border rounded-lg p-4 bg-card">
-                    <div className="text-sm font-mono bg-muted p-3 rounded">
-                      SELECT * FROM users WHERE id = {searchValue || "?"};
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-medium mb-3">Point Lookup</h4>
-                    <div className="border border-border rounded-lg p-4">
-                      <div className="space-y-2">
-                        <div className="text-sm">Search for key: 75</div>
-                        <div className="flex items-center gap-2 text-xs">
-                          <span>Root:</span>
-                          <span className="bg-primary/20 px-2 py-1 rounded">50, 100</span>
-                          <span>→ Go right (75 > 50)</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs">
-                          <span>Internal:</span>
-                          <span className="bg-secondary/20 px-2 py-1 rounded">75, 85</span>
-                          <span>→ Found in middle</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs">
-                          <span>Leaf:</span>
-                          <span className="bg-accent/20 px-2 py-1 rounded">70, 80</span>
-                          <span>→ Key 75 found!</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium mb-3">Range Query</h4>
-                    <div className="border border-border rounded-lg p-4">
-                      <div className="space-y-2">
-                        <div className="text-sm">Range: 30 to 80</div>
-                        <div className="text-xs text-muted-foreground">
-                          • Find start key (30) in leaf
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          • Follow leaf node links
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          • Collect all keys in range
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          • Stop at end key (80)
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-    
-              </div>
+              <QueryVisualization 
+                searchValue={searchValue} 
+                setSearchValue={setSearchValue} 
+                handleSearch={handleSearch} 
+              />
             </CardContent>
           </Card>
         )}
