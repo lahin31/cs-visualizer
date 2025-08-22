@@ -54,9 +54,3 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - **Animations**: [Framer Motion](https://www.framer.com/motion/)
 - **Code Editor**: [CodeMirror](https://codemirror.net/)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
-
-Let me know if you'd like any adjustments to this `README.md`
-
-```
-
-```
