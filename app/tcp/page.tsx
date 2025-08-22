@@ -4,7 +4,7 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Play, Send, CheckCircle2 } from "lucide-react"
+import { Play, Send, CheckCircle2, BarChart3, FileText } from "lucide-react"
 
 const DataTransferVisualizationView = () => {
   const [packets, setPackets] = useState([
@@ -49,7 +49,6 @@ const DataTransferVisualizationView = () => {
       </div>
       <div className="relative h-80 border-2 border-dashed border-border rounded-lg p-4 bg-muted/50">
         <div className="flex justify-between h-full">
-          {/* Client */}
           <div className="w-1/4 flex flex-col items-center">
             <div className="text-lg font-bold text-foreground">Client</div>
             <div className="text-sm text-muted-foreground">192.168.1.10</div>
@@ -67,18 +66,15 @@ const DataTransferVisualizationView = () => {
             </div>
           </div>
 
-          {/* Server */}
           <div className="w-1/4 flex flex-col items-center">
             <div className="text-lg font-bold text-foreground">Server</div>
             <div className="text-sm text-muted-foreground">10.0.0.1</div>
           </div>
         </div>
 
-        {/* Packets Animation */}
         <div className="absolute top-0 left-0 w-full h-full">
           {packets.map((p, i) => (
             <div key={`anim-${p.id}`}>
-              {/* Data Packet */}
               <motion.div
                 className="absolute top-1/4 w-24 p-1 rounded-md bg-primary/80 text-primary-foreground text-center text-xs shadow-lg"
                 style={{ top: `${20 + i * 15}%` }}
@@ -91,7 +87,6 @@ const DataTransferVisualizationView = () => {
               >
                 SEQ: {p.seq}
               </motion.div>
-              {/* ACK Packet */}
               <motion.div
                 className="absolute w-24 p-1 rounded-md bg-secondary/80 text-secondary-foreground text-center text-xs shadow-lg"
                 style={{ top: `${20 + i * 15}%` }}
@@ -113,16 +108,16 @@ const DataTransferVisualizationView = () => {
 }
 
 const ThreeWayHandshakeVisualization = () => {
-  const [step, setStep] = useState(0) // 0: idle, 1: SYN, 2: SYN-ACK, 3: ACK, 4: complete
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [step, setStep] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const handlePlay = () => {
-    setIsPlaying(true)
-    setStep(1)
-    setTimeout(() => setStep(2), 1500)
-    setTimeout(() => setStep(3), 3000)
+    setIsPlaying(true);
+    setStep(1);
+    setTimeout(() => setStep(2), 1500);
+    setTimeout(() => setStep(3), 3000);
     setTimeout(() => {
-      setStep(4)
+      setStep(4);
       setIsPlaying(false)
     }, 4500)
     setTimeout(() => setStep(0), 6000) // Reset after a delay
@@ -162,7 +157,6 @@ const ThreeWayHandshakeVisualization = () => {
           </div>
         </div>
 
-        {/* SYN Packet */}
         <motion.div
           className="absolute top-1/4 w-24 p-1 rounded-md bg-blue-500/80 text-white text-center text-xs shadow-lg"
           initial={{ left: "15%", opacity: 0 }}
@@ -175,7 +169,6 @@ const ThreeWayHandshakeVisualization = () => {
           SYN
         </motion.div>
 
-        {/* SYN-ACK Packet */}
         <motion.div
           className="absolute top-1/2 w-24 p-1 rounded-md bg-green-500/80 text-white text-center text-xs shadow-lg"
           initial={{ right: "15%", opacity: 0 }}
@@ -188,7 +181,6 @@ const ThreeWayHandshakeVisualization = () => {
           SYN-ACK
         </motion.div>
 
-        {/* ACK Packet */}
         <motion.div
           className="absolute top-3/4 w-24 p-1 rounded-md bg-blue-500/80 text-white text-center text-xs shadow-lg"
           initial={{ left: "15%", opacity: 0 }}
@@ -207,12 +199,12 @@ const ThreeWayHandshakeVisualization = () => {
 }
 
 const ConnectionTerminationVisualization = () => {
-  const [step, setStep] = useState(0) // 0: idle, 1: FIN, 2: ACK, 3: FIN, 4: ACK, 5: complete
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [step, setStep] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const handlePlay = () => {
-    setIsPlaying(true)
-    setStep(1)
+    setIsPlaying(true);
+    setStep(1);
     setTimeout(() => setStep(2), 1500)
     setTimeout(() => setStep(3), 3000)
     setTimeout(() => setStep(4), 4500)
@@ -220,7 +212,7 @@ const ConnectionTerminationVisualization = () => {
       setStep(5)
       setIsPlaying(false)
     }, 6000)
-    setTimeout(() => setStep(0), 7500) // Reset
+    setTimeout(() => setStep(0), 7500)
   }
 
   const getStatusText = () => {
@@ -259,7 +251,6 @@ const ConnectionTerminationVisualization = () => {
           </div>
         </div>
 
-        {/* FIN from Client */}
         <motion.div
           className="absolute w-24 p-1 rounded-md bg-red-500/80 text-white text-center text-xs shadow-lg"
           style={{ top: '15%' }}
@@ -290,7 +281,6 @@ const ConnectionTerminationVisualization = () => {
           FIN
         </motion.div>
 
-        {/* ACK from Client */}
         <motion.div
           className="absolute w-24 p-1 rounded-md bg-gray-500/80 text-white text-center text-xs shadow-lg"
           style={{ top: '75%' }}
