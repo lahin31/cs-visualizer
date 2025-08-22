@@ -2,28 +2,59 @@
 
 import { useState } from "react"
 
-export const BPlusTreeVisualization = ({ isSearch }: { isSearch?: boolean }) => {
+export const BPlusTreeVisualization = ({
+  isSearch,
+  isInsertionAnimation,
+  insertionStep,
+  insertionValue,
+}: {
+  isSearch?: boolean
+  isInsertionAnimation?: boolean
+  insertionStep?: number
+  insertionValue?: number
+}) => {
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
   const [searchPath, setSearchPath] = useState<string[]>([])
   const [range, setRange] = useState<[number, number] | null>([30, 80])
 
-  const leafNodesData = [
-    [
-      [10, 20],
-      [30, 40],
-      [45, 48],
-    ],
-    [
-      [55, 60],
-      [70, 80],
-      [90, 95],
-    ],
-    [
-      [110, 120],
-      [130, 140],
-      [160, 170],
-    ],
+  const getInitialLeafNodes = () => [
+    [[10, 20], [30, 40], [45, 48]],
+    [[55, 60], [70, 80], [90, 95]],
+    [[110, 120], [130, 140], [160, 170]],
   ]
+
+  let leafNodesData = getInitialLeafNodes()
+  let rootKeys = [50, 100]
+  let middleKeys = [[25, 35], [75, 85], [125, 150]]
+  let highlightPath: string[] = []
+
+  if (isInsertionAnimation && insertionValue) {
+    switch (insertionStep) {
+      case 1: // Find Leaf Node
+        highlightPath = ["root", "middle", "leaf-1-0"]
+        break
+      case 2: // Insert Key (Overflow)
+        highlightPath = ["root", "middle", "leaf-1-0"]
+        leafNodesData[1][0] = [55, 60, insertionValue]
+        break
+      case 3: // Split Node
+        highlightPath = ["root", "middle", "leaf-1-0", "leaf-1-1"]
+        leafNodesData[1][0] = [55]
+        leafNodesData[1].splice(1, 0, [60, insertionValue])
+        break
+      case 4: // Promote Key
+        highlightPath = ["root", "middle"]
+        leafNodesData[1][0] = [55]
+        leafNodesData[1].splice(1, 0, [60, insertionValue])
+        middleKeys[1] = [60, 75, 85]
+        break
+      case 5: // Final State
+        leafNodesData[1][0] = [55]
+        leafNodesData[1].splice(1, 0, [60, insertionValue])
+        middleKeys[1] = [60, 75, 85]
+        break
+    }
+  }
 
   return (
     <div className="border border-border rounded-lg p-6 bg-card">
@@ -32,14 +63,17 @@ export const BPlusTreeVisualization = ({ isSearch }: { isSearch?: boolean }) => 
         <div
           className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-300 ${
             selectedNode === "root" ? "border-primary bg-primary/10" : "border-border bg-background"
-          } ${searchPath.includes("root") ? "!border-chart-1 ring-2 ring-chart-1" : ""}`}
+          } ${searchPath.includes("root") ? "!border-chart-1 ring-2 ring-chart-1" : ""} ${
+            highlightPath.includes("root") ? "!border-yellow-400 ring-2 ring-yellow-400" : ""
+          }`}
           onClick={() => !isSearch && setSelectedNode(selectedNode === "root" ? null : "root")}
         >
           <div className="text-center">
             <div className="text-sm font-medium text-primary">Root Node</div>
             <div className="flex gap-2 mt-2">
-              <span className="px-2 py-1 bg-primary/20 rounded text-xs font-mono">50</span>
-              <span className="px-2 py-1 bg-primary/20 rounded text-xs font-mono">100</span>
+              {rootKeys.map((key) => (
+                <span key={key} className="px-2 py-1 bg-primary/20 rounded text-xs font-mono">{key}</span>
+              ))}
             </div>
             <div className="text-xs text-muted-foreground mt-1">Internal Node</div>
           </div>
@@ -53,30 +87,17 @@ export const BPlusTreeVisualization = ({ isSearch }: { isSearch?: boolean }) => 
             <div
               className={`border-2 rounded-lg p-3 cursor-pointer transition-all duration-300 ${
                 selectedNode === position ? "border-secondary bg-secondary/10" : "border-border bg-background"
-              } ${searchPath.includes(position) ? "!border-chart-1 ring-2 ring-chart-1" : ""}`}
+              } ${searchPath.includes(position) ? "!border-chart-1 ring-2 ring-chart-1" : ""} ${
+                highlightPath.includes(position) ? "!border-yellow-400 ring-2 ring-yellow-400" : ""
+              }`}
               onClick={() => !isSearch && setSelectedNode(selectedNode === position ? null : position)}
             >
               <div className="text-center">
                 <div className="text-xs font-medium text-secondary">Internal Node</div>
                 <div className="flex gap-1 mt-1">
-                  {index === 0 && (
-                    <>
-                      <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">25</span>
-                      <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">35</span>
-                    </>
-                  )}
-                  {index === 1 && (
-                    <>
-                      <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">75</span>
-                      <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">85</span>
-                    </>
-                  )}
-                  {index === 2 && (
-                    <>
-                      <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">125</span>
-                      <span className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">150</span>
-                    </>
-                  )}
+                  {middleKeys[index].map((key) => (
+                    <span key={key} className="px-1 py-0.5 bg-secondary/20 rounded text-xs font-mono">{key}</span>
+                  ))}
                 </div>
               </div>
             </div>
@@ -92,17 +113,22 @@ export const BPlusTreeVisualization = ({ isSearch }: { isSearch?: boolean }) => 
                     key={leafIndex}
                     className={`border rounded p-2 bg-muted/50 transition-all duration-300 ${
                       searchPath.includes(leafId) ? "!border-chart-1 ring-2 ring-chart-1" : "border-border"
-                    } ${isInRange ? "bg-chart-1/20" : ""}`}
+                    } ${isInRange ? "bg-chart-1/20" : ""} ${
+                      highlightPath.includes(leafId) ? "!border-yellow-400 ring-2 ring-yellow-400" : ""
+                    }`}
                   >
                     <div className="text-xs text-center text-accent font-medium">Leaf Node</div>
                     <div className="flex flex-col gap-1 mt-1">
                       {leaf.map((val) => {
                         const isValInRange = range && val >= range[0] && val <= range[1]
+                        const isNewValue = isInsertionAnimation && val === insertionValue && (insertionStep || 0) >= 2
                         return (
                           <span
                             key={val}
                             className={`px-1 py-0.5 rounded text-xs font-mono transition-all duration-300 ${
                               isValInRange ? "bg-chart-1 text-white" : "bg-accent/20"
+                            } ${
+                              isNewValue ? "!bg-green-500 text-white" : ""
                             }`}
                           >
                             {val}

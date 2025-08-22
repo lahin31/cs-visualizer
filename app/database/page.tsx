@@ -17,6 +17,8 @@ export default function DatabasePage() {
   const [searchValue, setSearchValue] = useState("75")
   const [searchPath, setSearchPath] = useState<string[]>([])
   const [range, setRange] = useState<[number, number] | null>([30, 80])
+  const [insertionValue, setInsertionValue] = useState(65)
+  const [insertionStep, setInsertionStep] = useState(0)
 
   const handleSearch = () => {
     const value = parseInt(searchValue)
@@ -56,6 +58,15 @@ export default function DatabasePage() {
     { id: 1, title: "Insertion & WAL", icon: Search, color: "bg-secondary" },
     { id: 2, title: "Deletion", icon: Database, color: "bg-accent" },
     { id: 3, title: "Search & Range", icon: Play, color: "bg-chart-1" },
+  ]
+
+  const insertionSteps = [
+    "Initial State",
+    "Find Leaf Node",
+    "Insert Key (Overflow)",
+    "Split Node",
+    "Promote Key",
+    "Final State",
   ]
 
   const querySteps = [
@@ -179,6 +190,82 @@ export default function DatabasePage() {
               <div className="flex items-center gap-2">
                 <div className="w-8 h-0.5 bg-purple-300"></div>
                 <div className="text-xs text-muted-foreground">Range Queries</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* How B+ Trees Connect to Indexing */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-6 w-6 text-green-500" />
+              How B+ Trees Power Database Indexing
+            </CardTitle>
+            <CardDescription>
+              Connecting the B+ Tree data structure to its role in creating fast, efficient database indexes.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">From Query to Data Retrieval</h3>
+                <div className="relative border-l-2 border-primary/20 pl-6 space-y-8">
+                  {/* Step 1: Query */}
+                  <div className="relative">
+                    <div className="absolute -left-8 top-1 w-4 h-4 bg-primary rounded-full"></div>
+                    <h4 className="font-semibold">1. SQL Query</h4>
+                    <p className="text-sm text-muted-foreground">A `SELECT` statement with a `WHERE` clause is issued to find specific data.</p>
+                    <code className="text-xs bg-muted p-1 rounded mt-1 inline-block">SELECT * FROM users WHERE age > 30</code>
+                  </div>
+
+                  {/* Step 2: Index Lookup */}
+                  <div className="relative">
+                    <div className="absolute -left-8 top-1 w-4 h-4 bg-secondary rounded-full"></div>
+                    <h4 className="font-semibold">2. B+ Tree Index Lookup</h4>
+                    <p className="text-sm text-muted-foreground">The database uses the B+ tree index on the `age` column to quickly find matching leaf nodes.</p>
+                  </div>
+
+                  {/* Step 3: Pointer to Data */}
+                  <div className="relative">
+                    <div className="absolute -left-8 top-1 w-4 h-4 bg-accent rounded-full"></div>
+                    <h4 className="font-semibold">3. Leaf Node Pointers</h4>
+                    <p className="text-sm text-muted-foreground">Leaf nodes contain pointers (e.g., row IDs) to the actual data rows stored on disk.</p>
+                  </div>
+
+                  {/* Step 4: Data Fetch */}
+                  <div className="relative">
+                    <div className="absolute -left-8 top-1 w-4 h-4 bg-chart-1 rounded-full"></div>
+                    <h4 className="font-semibold">4. Disk I/O</h4>
+                    <p className="text-sm text-muted-foreground">The database performs minimal disk reads to fetch only the required data rows.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-muted/50 p-6 rounded-lg border">
+                <h3 className="text-lg font-semibold mb-4 text-center">Index Data Structure</h3>
+                <div className="flex flex-col items-center">
+                  <div className="flex gap-2 mb-2">
+                    <div className="bg-blue-100 text-blue-800 text-xs font-bold p-2 rounded-md">Index Key (e.g., Age)</div>
+                    <div className="bg-green-100 text-green-800 text-xs font-bold p-2 rounded-md">Row Pointer</div>
+                  </div>
+                  <div className="text-2xl">⬇️</div>
+                  <div className="bg-card p-4 rounded-lg shadow-md w-full">
+                    <div className="flex justify-between items-center border-b pb-2 mb-2">
+                      <span className="text-sm font-mono">32</span>
+                      <span className="text-sm font-mono text-muted-foreground">0x1A2B3C</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b pb-2 mb-2">
+                      <span className="text-sm font-mono">45</span>
+                      <span className="text-sm font-mono text-muted-foreground">0x4D5E6F</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-mono">51</span>
+                      <span className="text-sm font-mono text-muted-foreground">0x7G8H9I</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3 text-center">Leaf nodes store key-pointer pairs, linking indexed values to physical data locations.</p>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -317,15 +404,16 @@ export default function DatabasePage() {
 
                   <div className="border border-border rounded-lg p-4">
                     <h4 className="font-medium mb-3">Insertion Example: Key 65</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="bg-muted p-2 rounded">
-                        <span className="font-mono">Before: [55, 60] [70, 80] [90, 95]</span>
+                    <BPlusTreeVisualization isInsertionAnimation insertionStep={insertionStep} insertionValue={insertionValue} />
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">Animation Step:</span>
+                        <Badge variant="secondary">{insertionSteps[insertionStep]}</Badge>
                       </div>
-                      <div className="bg-secondary/20 p-2 rounded border border-secondary">
-                        <span className="font-mono">Insert 65: [55, 60] [65, 70, 80] [90, 95]</span>
-                      </div>
-                      <div className="bg-accent/20 p-2 rounded">
-                        <span className="font-mono">After Split: [55, 60] [65] [70, 80] [90, 95]</span>
+                      <div className="flex justify-center gap-2">
+                        <Button size="sm" variant="outline" onClick={() => setInsertionStep(Math.max(0, insertionStep - 1))} disabled={insertionStep === 0}>Prev</Button>
+                        <Button size="sm" onClick={() => setInsertionStep(Math.min(insertionSteps.length - 1, insertionStep + 1))} disabled={insertionStep === insertionSteps.length - 1}>Next</Button>
+                        <Button size="sm" variant="ghost" onClick={() => setInsertionStep(0)}>Reset</Button>
                       </div>
                     </div>
                   </div>
